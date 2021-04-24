@@ -1,0 +1,137 @@
+Описание действий в терминале при выполнении ДЗ
+
+1. Установите СУБД MySQL. 
+Создайте в домашней директории файл .my.cnf, задав в нем логин и пароль, 
+который указывался при установке:
+
+a) создание файла командой cat:
+johnk@johnk-Modern-15:~$ cat > .my.cnf
+[client]
+user=root
+password='...'
+
+b) изменение прав доступа:
+johnk@johnk-Modern-15:~$ sudo chmod 0600 .my.cnf
+johnk@johnk-Modern-15:~$ ls -lia
+...
+1711714 -rw-------  1 johnk johnk    39 янв 23 15:44  .my.cnf
+...
+
+2. Создайте базу данных example, разместите в ней таблицу users, 
+состоящую из двух столбцов, числового id и строкового name.
+
+johnk@johnk-Modern-15:~$ mysql
+...
+mysql>
+...
+mysql> CREATE DATABASE IF NOT EXISTS example;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| example            |
+| geekbrains         |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+6 rows in set (0.01 sec)
+
+mysql> SHOW TABLES FROM example;
+Empty set (0.02 sec)
+
+-- ошибочно создал таблицу с одним столбцом k 
+mysql> CREATE TABLE users (k INT);
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> SHOW TABLES FROM example;
++-------------------+
+| Tables_in_example |
++-------------------+
+| users             |
++-------------------+
+1 row in set (0.01 sec)
+
+mysql> DESCRIBE users;
++-------+------+------+-----+---------+-------+
+| Field | Type | Null | Key | Default | Extra |
++-------+------+------+-----+---------+-------+
+| k     | int  | YES  |     | NULL    |       |
++-------+------+------+-----+---------+-------+
+1 row in set (0.00 sec)
+
+-- переименовываю столбец и добавляю новый
+mysql> ALTER TABLE users CHANGE k id INT NOT NULL;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE users ADD name CHAR;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESCRIBE users;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| id    | int     | NO   |     | NULL    |       |
+| name  | char(1) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+2 rows in set (0.01 sec)
+
+mysql> exit
+Bye
+
+
+3. Создайте дамп базы данных example из предыдущего задания, разверните содержимое дампа в новую базу данных sample.
+
+a) запись дампа в текстовый файл:
+johnk@johnk-Modern-15:/var/lib/mysql$ mysqldump example > example.sql
+
+b) создание базы данных sample:
+
+mysql> CREATE DATABASE IF NOT EXISTS sample;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| example            |
+| geekbrains         |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sample             |
+| sys                |
++--------------------+
+7 rows in set (0.01 sec)
+
+c) разворачиваем дамп в БД sample:
+johnk@johnk-Modern-15:/var/lib/mysql$ mysql sample < example.sql
+johnk@johnk-Modern-15:/var/lib/mysql$ mysql sample
+
+mysql> SHOW TABLES FROM sample;
++------------------+
+| Tables_in_sample |
++------------------+
+| users            |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> DESCRIBE users;
++-------+---------+------+-----+---------+-------+
+| Field | Type    | Null | Key | Default | Extra |
++-------+---------+------+-----+---------+-------+
+| id    | int     | NO   |     | NULL    |       |
+| name  | char(1) | YES  |     | NULL    |       |
++-------+---------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+4*. (по желанию) Ознакомьтесь более подробно с документацией утилиты mysqldump. 
+Создайте дамп единственной таблицы help_keyword базы данных mysql. 
+Причем добейтесь того, чтобы дамп содержал только первые 100 строк таблицы.
+
+johnk@johnk-Modern-15:/var/lib/mysql$ mysqldump mysql --where="true limit 100" help_keyword > task_for.sql
